@@ -50,6 +50,7 @@ class UserServiceImpl(
 }
 
 fun User(entity: UserEntity) = User(
+    id = entity.id,
     username = entity.username,
     image = entity.image,
 )

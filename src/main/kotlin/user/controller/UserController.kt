@@ -1,12 +1,20 @@
 package com.wafflestudio.seminar.spring2023.user.controller
 
-import com.wafflestudio.seminar.spring2023.user.service.*
+import com.wafflestudio.seminar.spring2023.user.service.AuthenticateException
+import com.wafflestudio.seminar.spring2023.user.service.Authenticated
+import com.wafflestudio.seminar.spring2023.user.service.SignInInvalidPasswordException
+import com.wafflestudio.seminar.spring2023.user.service.SignInUserNotFoundException
+import com.wafflestudio.seminar.spring2023.user.service.SignUpBadPasswordException
+import com.wafflestudio.seminar.spring2023.user.service.SignUpBadUsernameException
+import com.wafflestudio.seminar.spring2023.user.service.SignUpUsernameConflictException
+import com.wafflestudio.seminar.spring2023.user.service.User
+import com.wafflestudio.seminar.spring2023.user.service.UserException
+import com.wafflestudio.seminar.spring2023.user.service.UserService
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.GetMapping
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RequestHeader
 import org.springframework.web.bind.annotation.RestController
 
 @RestController
@@ -17,46 +25,34 @@ class UserController(
     @PostMapping("/api/v1/signup")
     fun signup(
         @RequestBody request: SignUpRequest,
-    ): ResponseEntity<Unit> {
-        val user = userService.signUp(
+    ) {
+        userService.signUp(
             username = request.username,
             password = request.password,
-            image = request.image,
+            image = request.image
         )
-        return ResponseEntity.ok(Unit)
     }
 
     @PostMapping("/api/v1/signin")
     fun signIn(
         @RequestBody request: SignInRequest,
-    ): ResponseEntity<SignInResponse> {
+    ): SignInResponse {
         val user = userService.signIn(
             username = request.username,
-            password = request.password,
+            password = request.password
         )
 
-        return ResponseEntity.ok(SignInResponse(
-            accessToken = user.getAccessToken(),
-        ))
+        return SignInResponse(user.getAccessToken())
     }
 
     @GetMapping("/api/v1/users/me")
     fun me(
-        @RequestHeader(name = "Authorization", required = false) authorizationHeader: String?,
-    ): ResponseEntity<UserMeResponse> {
-        val accessToken = extractTokenFromHeader(authorizationHeader)
-        val user = userService.authenticate(accessToken)
-        return ResponseEntity.ok(UserMeResponse(
+        @Authenticated user: User,
+    ): UserMeResponse {
+        return UserMeResponse(
             username = user.username,
-            image = user.image,
-        ))
-    }
-
-    private fun extractTokenFromHeader(authorizationHeader: String?): String {
-        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
-            throw AuthenticateException()
-        }
-        return authorizationHeader.removePrefix("Bearer ")
+            image = user.image
+        )
     }
 
     @ExceptionHandler
@@ -67,6 +63,7 @@ class UserController(
             is SignInUserNotFoundException, is SignInInvalidPasswordException -> 404
             is AuthenticateException -> 401
         }
+
         return ResponseEntity.status(status).build()
     }
 }
