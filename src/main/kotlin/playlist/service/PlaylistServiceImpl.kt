@@ -35,6 +35,11 @@ class PlaylistServiceImpl(
             Thread.sleep(1000 * 3)
         }
 
+        // 과제를 위해 id가 7인 경우 예외적으로 느린 응답
+        if (playlist.id == 7L) {
+            Thread.sleep(1000 * 3)
+        }
+
         return Playlist(playlist, songs)
     }
 }

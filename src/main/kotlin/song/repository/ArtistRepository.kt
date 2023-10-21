@@ -1,8 +1,6 @@
 package com.wafflestudio.seminar.spring2023.song.repository
 
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Query
 
-interface ArtistRepository : JpaRepository<ArtistEntity, Long> {
-    fun findByName(name: String): ArtistEntity?
-    fun findByNameIn(names: List<String>): List<ArtistEntity>
-}
+interface ArtistRepository : JpaRepository<ArtistEntity, Long>
