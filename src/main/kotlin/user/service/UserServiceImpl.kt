@@ -1,5 +1,6 @@
 package com.wafflestudio.seminar.spring2023.user.service
 
+import com.wafflestudio.seminar.spring2023._web.exception.AuthenticateException
 import com.wafflestudio.seminar.spring2023.user.repository.UserEntity
 import com.wafflestudio.seminar.spring2023.user.repository.UserRepository
 import org.springframework.stereotype.Service
@@ -18,7 +19,7 @@ class UserServiceImpl(
             throw SignUpBadPasswordException()
         }
 
-        if (userRepository.existsByUsername(username)) {
+        if (userRepository.findByUsername(username) != null) {
             throw SignUpUsernameConflictException()
         }
 
@@ -26,7 +27,8 @@ class UserServiceImpl(
             UserEntity(
                 username = username,
                 password = password,
-                image = image)
+                image = image
+            )
         )
 
         return User(entity)
@@ -44,8 +46,8 @@ class UserServiceImpl(
 
     override fun authenticate(accessToken: String): User {
         val entity = userRepository.findByUsername(accessToken.reversed()) ?: throw AuthenticateException()
-        return User(entity)
 
+        return User(entity)
     }
 }
 

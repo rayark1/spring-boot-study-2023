@@ -10,6 +10,7 @@ class PlaylistEntity (
     val title: String,
     val subtitle: String,
     val image: String,
+    var viewCnt: Int,
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "group_id")
     val group: PlaylistGroupEntity,
