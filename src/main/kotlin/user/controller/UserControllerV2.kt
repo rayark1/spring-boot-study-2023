@@ -1,8 +1,6 @@
 package com.wafflestudio.seminar.spring2023.user.controller
 
-import com.wafflestudio.seminar.spring2023.user.service.User
-import com.wafflestudio.seminar.spring2023.user.service.UserException
-import com.wafflestudio.seminar.spring2023.user.service.UserService
+import com.wafflestudio.seminar.spring2023.user.service.*
 import org.springframework.http.ResponseEntity
 import org.springframework.web.bind.annotation.ExceptionHandler
 import org.springframework.web.bind.annotation.GetMapping
@@ -11,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestBody
 import org.springframework.web.bind.annotation.RestController
 
 
-// TODO: 추가 과제 ExceptionHandler와 HandlerMethodArgumentResolver 적용
+// TODO: HandlerMethodArgumentResolver 적용
 @RestController
 class UserControllerV2(
     private val userService: UserService,
@@ -21,23 +19,43 @@ class UserControllerV2(
     fun signup(
         @RequestBody request: SignUpRequest,
     ) {
-        TODO()
+        userService.signUp(
+            username = request.username,
+            password = request.password,
+            image = request.image,
+        )
     }
 
     @PostMapping("/api/v2/signin")
     fun signIn(
         @RequestBody request: SignInRequest,
     ): SignInResponse {
-        TODO()
+        val user = userService.signIn(
+            username = request.username,
+            password = request.password,
+        )
+
+        return SignInResponse(
+            accessToken = user.getAccessToken(),
+        )
     }
 
     @GetMapping("/api/v2/users/me")
     fun me(user: User): UserMeResponse {
-        TODO()
+        return UserMeResponse(
+            username = user.username,
+            image = user.image,
+        )
     }
 
     @ExceptionHandler
     fun handleException(e: UserException): ResponseEntity<Unit> {
-        TODO()
+        val status = when (e) {
+            is SignUpBadUsernameException, is SignUpBadPasswordException -> 400
+            is SignUpUsernameConflictException -> 409
+            is SignInUserNotFoundException, is SignInInvalidPasswordException -> 404
+            is AuthenticateException -> 401
+        }
+        return ResponseEntity.status(status).build()
     }
 }
